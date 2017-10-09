@@ -93,11 +93,7 @@ public class MainActivity extends Activity {
         super.onStart();
         new DownloadXmlTask().execute(RSS_FEED);
 
-        if (!MyApplication.isBound()) {
-
-            Intent bindIntent = new Intent(this,MusicPlayer.class);
-            MyApplication.setBound(bindService(bindIntent, sConn, Context.BIND_AUTO_CREATE));
-        }
+        new startServiceMusicTask().execute();
     }
 
     @Override
@@ -249,6 +245,24 @@ public class MainActivity extends Activity {
         }
     }
 
+
+
+    private class startServiceMusicTask extends AsyncTask<String, Void, Boolean> {
+
+
+        @Override
+        protected Boolean doInBackground(String... strings) {
+
+            if (!MyApplication.isBound()) {
+
+                Intent bindIntent = new Intent(getApplicationContext(),MusicPlayer.class);
+                MyApplication.setBound(bindService(bindIntent, sConn, Context.BIND_AUTO_CREATE));
+            }
+
+            return null;
+        }
+    }
+
     protected  List<ItemFeed> getDados(){
         Cursor cursor = db.getReadableDatabase()
                 .query(PodcastDBHelper.DATABASE_TABLE,
@@ -307,6 +321,10 @@ public class MainActivity extends Activity {
             return result;
         }
     }
+
+
+
+
 
 
     private abstract class BaseTask<T> extends AsyncTask<T, Void, Cursor> {

@@ -1,8 +1,11 @@
 package br.ufpe.cin.if710.podcast.ui.adapter;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 import android.content.Context;
 import android.content.Intent;
+import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
@@ -84,7 +87,21 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         final ItemFeed item = getItem(position);
 
         holder.item_title.setText(item.getTitle());
-        holder.item_date.setText(item.getPubDate());
+
+
+        try {
+
+
+            SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z");
+            Date newDate = format.parse(item.getPubDate());
+
+            format = new SimpleDateFormat("dd/MMM/yyyy");
+            String date = format.format(newDate);
+            holder.item_date.setText(date);
+        }catch (ParseException e){
+            System.out.println("");
+        }
+
 
 
         if(!item.getFileUri().isEmpty()){

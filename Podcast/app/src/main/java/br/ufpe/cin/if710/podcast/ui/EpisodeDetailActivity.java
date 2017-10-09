@@ -5,6 +5,8 @@ import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.Locale;
 
 import br.ufpe.cin.if710.podcast.R;
@@ -31,7 +33,18 @@ public class EpisodeDetailActivity extends Activity {
 
 
         this.textTitle.setText(this.getIntent().getExtras().getString(XmlFeedAdapter.TITLE));
-        this.textPubDate.setText(this.getIntent().getExtras().getString(XmlFeedAdapter.PUBDATE));
         this.textDescription.setText(this.getIntent().getExtras().getString(XmlFeedAdapter.DESCRIPTION));
+
+        //Data formatada
+        try {
+            SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z");
+            Date newDate = format.parse(this.getIntent().getExtras().getString(XmlFeedAdapter.PUBDATE));
+
+            format = new SimpleDateFormat("dd/MMM/yyyy");
+            String date = format.format(newDate);
+            this.textPubDate.setText(date);
+        }catch (ParseException e){
+            System.out.println("Erro de parse na data");
+        }
     }
 }
