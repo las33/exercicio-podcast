@@ -2,17 +2,31 @@ package br.ufpe.cin.if710.podcast.ui.adapter;
 
 import java.util.List;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 
 import br.ufpe.cin.if710.podcast.R;
+import br.ufpe.cin.if710.podcast.aplication.MyApplication;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
+import br.ufpe.cin.if710.podcast.service.DownloadService;
+import br.ufpe.cin.if710.podcast.service.MusicPlayer;
+import br.ufpe.cin.if710.podcast.ui.EpisodeDetailActivity;
 
 public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
 
     int linkResource;
+
+    public static final String TITLE = "title";
+    public static final String LINK = "link";
+    public static final String PUBDATE = "pubDate";
+    public static final String DESCRIPTION = "description";
+    public static final String DOWNLOAD_LINK = "downloadLink";
+
 
     public XmlFeedAdapter(Context context, int resource, List<ItemFeed> objects) {
         super(context, resource, objects);
@@ -49,22 +63,107 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
     static class ViewHolder {
         TextView item_title;
         TextView item_date;
+        Button btn_Download;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        final ViewHolder holder;
         if (convertView == null) {
             convertView = View.inflate(getContext(), linkResource, null);
             holder = new ViewHolder();
             holder.item_title = (TextView) convertView.findViewById(R.id.item_title);
             holder.item_date = (TextView) convertView.findViewById(R.id.item_date);
+            holder.btn_Download = (Button) convertView.findViewById(R.id.item_action);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        holder.item_title.setText(getItem(position).getTitle());
-        holder.item_date.setText(getItem(position).getPubDate());
+
+        //final pq é acessado dentro do ONCLICK
+        final ItemFeed item = getItem(position);
+
+        holder.item_title.setText(item.getTitle());
+        holder.item_date.setText(item.getPubDate());
+
+
+        if(!item.getFileUri().isEmpty()){
+            holder.btn_Download.setText("play");
+        }
+
+
+        holder.item_title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //System.out.println("Click");
+                Context context = getContext();
+                Intent episodeDetailIntent = new Intent(context, EpisodeDetailActivity.class);
+
+                episodeDetailIntent.putExtra(TITLE, item.getTitle());
+                episodeDetailIntent.putExtra(LINK, item.getLink());
+                episodeDetailIntent.putExtra(PUBDATE, item.getPubDate());
+                episodeDetailIntent.putExtra(DESCRIPTION, item.getDescription());
+                episodeDetailIntent.putExtra(DOWNLOAD_LINK, item.getDownloadLink());
+
+                // chamando trasição de tela
+                context.startActivity(episodeDetailIntent);
+            }
+        });
+
+
+        holder.btn_Download.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("P1");
+                Context context = getContext();
+                Intent musicService = new Intent(context, MusicPlayer.class);
+                //holder.btn_Download.setEnabled(false);
+                if(holder.btn_Download.getText().equals("baixar")){
+
+                    Intent downloadService = new Intent(context, DownloadService.class);
+
+                    downloadService.setData(Uri.parse(item.getDownloadLink()));
+
+                    context.startService(downloadService);
+                    System.out.println("Baixar");
+                    holder.btn_Download.setText("baixando");
+
+
+                }else if(holder.btn_Download.getText().equals("play")){
+
+
+                    if (MyApplication.isBound()) {
+                        MyApplication.getMusicPlayer().playMusic(item.getFileUri());
+                    }
+
+                    System.out.println("escuta1r");
+                    holder.btn_Download.setText("pause");
+
+                } else  if(holder.btn_Download.getText().toString().equals("pause")){
+
+                    if (MyApplication.isBound()) {
+                        MyApplication.getMusicPlayer().pauseMusic();
+                    }
+
+                    holder.btn_Download.setText("unPause");
+
+                }else if(holder.btn_Download.getText().equals("unPause")){
+
+
+                    if (MyApplication.isBound()) {
+                        MyApplication.getMusicPlayer().continueMusic();
+                    }
+
+                    System.out.println("escuta1r");
+                    holder.btn_Download.setText("pause");
+
+                }
+
+
+
+            }
+        });
+
         return convertView;
     }
 }

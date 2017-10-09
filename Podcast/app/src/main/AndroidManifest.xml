@@ -3,8 +3,12 @@
     package="br.ufpe.cin.if710.podcast">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
 
     <application
+        android:name=".aplication.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -20,13 +24,34 @@
         </activity>
         <activity android:name=".ui.SettingsActivity" />
 
+        <service
+            android:name=".service.DownloadService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <service
+            android:name=".service.MusicPlayer"
+            android:enabled="true"
+            android:exported="true" />
+
         <provider
             android:name=".db.PodcastProvider"
             android:authorities="br.ufpe.cin.if710.podcast.feed"
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".ui.EpisodeDetailActivity"></activity>
+        <receiver
+            android:name=".receiver.NotificationReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="br.ufpe.cin.if710.podcast.broadcast.DOWNLOAD_COMPLETE" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".ui.EpisodeDetailActivity" />
     </application>
+
+
 
 </manifest>
